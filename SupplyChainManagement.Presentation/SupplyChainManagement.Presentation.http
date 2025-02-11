@@ -1,0 +1,6 @@
+@SupplyChainManagement.Presentation_HostAddress = http://localhost:5248
+
+GET {{SupplyChainManagement.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
