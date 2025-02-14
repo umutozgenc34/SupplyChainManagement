@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SupplyChainManagement.Application\SupplyChainManagement.Application.csproj" />
     <ProjectReference Include="..\SupplyChainManagement.Domain\SupplyChainManagement.Domain.csproj" />
   </ItemGroup>
 

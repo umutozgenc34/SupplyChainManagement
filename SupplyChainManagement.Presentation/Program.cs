@@ -1,3 +1,4 @@
+using SupplyChainManagement.Application.Extensions;
 using SupplyChainManagement.Persistence.Extensions;
 
 
@@ -5,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddPersistenceExtensions(builder.Configuration);
+builder.Services.AddPersistenceExtensions(builder.Configuration).AddApplicationExtension();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
