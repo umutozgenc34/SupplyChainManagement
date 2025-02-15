@@ -1,5 +1,7 @@
-﻿using MediatR;
+﻿using Core.Application.Responses;
+using MediatR;
+using SupplyChainManagement.Application.Features.Products.Dtos;
 
 namespace SupplyChainManagement.Application.Features.Products.Create;
 
-public record CreateProductCommand(string Name, int Quantity, decimal Price, int SupplierId) : IRequest<Guid>;
+public record CreateProductCommand(string Name, int Quantity, decimal Price, int SupplierId) : IRequest<ServiceResult<ProductDto>>;

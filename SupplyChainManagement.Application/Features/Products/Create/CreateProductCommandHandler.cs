@@ -1,23 +1,23 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using Core.Application.Responses;
+using MediatR;
+using SupplyChainManagement.Application.Features.Products.Dtos;
 using SupplyChainManagement.Application.Services.Repositories;
 using SupplyChainManagement.Domain.Products;
 
 namespace SupplyChainManagement.Application.Features.Products.Create;
 
-public class CreateProductCommandHandler(IProductRepository productRepository) : IRequestHandler<CreateProductCommand, Guid>
+public class CreateProductCommandHandler(IProductRepository productRepository,IMapper mapper) : IRequestHandler<CreateProductCommand, ServiceResult<ProductDto>>
 {
-    public async Task<Guid> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<ProductDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
-        var product = new Product
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Quantity = request.Quantity,
-            Price = request.Price,
-            SupplierId = request.SupplierId
-        };
+        var product = mapper.Map<Product>(request);
 
         await productRepository.AddAsync(product);
-        return product.Id;
+
+        var productAsDto = mapper.Map<ProductDto>(product);
+
+        return ServiceResult<ProductDto>.SuccessResult(productAsDto, "Product created successfully");
+
     }
 }

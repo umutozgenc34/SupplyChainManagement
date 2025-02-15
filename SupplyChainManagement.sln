@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SupplyChainManagement.Prese
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{3494FA8F-4AE6-4935-A02D-5E371FC08B0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Persistence", "Core.Persistence\Core.Persistence.csproj", "{76F0AA23-EDC3-43F9-B9BE-DF7ADD1E13C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Persistence", "Core.Persistence\Core.Persistence.csproj", "{76F0AA23-EDC3-43F9-B9BE-DF7ADD1E13C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Application", "..\Core.Application\Core.Application.csproj", "{2446210C-C750-425A-9F79-4F60FDC68E24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{76F0AA23-EDC3-43F9-B9BE-DF7ADD1E13C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76F0AA23-EDC3-43F9-B9BE-DF7ADD1E13C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76F0AA23-EDC3-43F9-B9BE-DF7ADD1E13C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2446210C-C750-425A-9F79-4F60FDC68E24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2446210C-C750-425A-9F79-4F60FDC68E24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2446210C-C750-425A-9F79-4F60FDC68E24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2446210C-C750-425A-9F79-4F60FDC68E24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,6 +69,7 @@ Global
 		{5DC4EA1F-D51C-4ABA-BF77-F650ABAC7D85} = {7ACA986F-BA5D-44D0-B167-A1EF38CD306A}
 		{49C0135F-7B09-45CC-A62D-8F67F4ACE586} = {7ACA986F-BA5D-44D0-B167-A1EF38CD306A}
 		{76F0AA23-EDC3-43F9-B9BE-DF7ADD1E13C6} = {540EFA34-863B-41B6-942E-2C27A2E760BC}
+		{2446210C-C750-425A-9F79-4F60FDC68E24} = {540EFA34-863B-41B6-942E-2C27A2E760BC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5F45CB89-6B51-426F-A02E-0CDB61D6EF3B}
