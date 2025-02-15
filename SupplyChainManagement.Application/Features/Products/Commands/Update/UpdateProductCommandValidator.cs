@@ -1,11 +1,14 @@
 ﻿using FluentValidation;
 
-namespace SupplyChainManagement.Application.Features.Products.Create;
+namespace SupplyChainManagement.Application.Features.Products.Commands.Update;
 
-public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
+public class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>
 {
-    public CreateProductCommandValidator()
+    public UpdateProductCommandValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Id is required.");
+
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Product name is required.")
             .MaximumLength(100).WithMessage("Product name cannot exceed 100 characters.");
