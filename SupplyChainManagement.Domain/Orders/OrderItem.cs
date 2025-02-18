@@ -14,4 +14,15 @@ public sealed class OrderItem : BaseEntity<Guid>
     public Guid ProductId { get; set; }
     public Product Product { get; set; } = null!;
 
+    public OrderItem()
+    {
+        
+    }
+
+    public OrderItem(Guid productId, int quantity, decimal price)
+    {
+        ProductId = productId;
+        Quantity = quantity;
+        Price = price;
+    }
 }

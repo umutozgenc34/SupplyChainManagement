@@ -8,4 +8,7 @@ public sealed class Order : BaseEntity<Guid>
     public OrderStatus Status { get; set; } = OrderStatus.Pending;  
 
     public List<OrderItem> OrderItems { get; set; } = new();
+
+    public decimal TotalPrice => OrderItems.Sum(item => item.Price * item.Quantity);
+
 }

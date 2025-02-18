@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SupplyChainManagement.Application.Services.Repositories;
 using SupplyChainManagement.Persistence.Contexts;
+using SupplyChainManagement.Persistence.Orders.Conretes;
 using SupplyChainManagement.Persistence.Products.Concretes;
 using SupplyChainManagement.Persistence.Suppliers.Concretes;
 
@@ -20,6 +21,7 @@ public static class PersistenceExtensions
 
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ISupplierRepository,SupplierRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
         return services;
     }
 }

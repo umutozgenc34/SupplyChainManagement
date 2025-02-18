@@ -36,7 +36,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Orders.OrderItem", b =>
@@ -63,7 +63,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Products.Product", b =>
@@ -90,7 +90,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasIndex("SupplierId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Suppliers.Supplier", b =>
@@ -118,7 +118,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Suppliers");
+                    b.ToTable("Suppliers", (string)null);
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Orders.OrderItem", b =>
