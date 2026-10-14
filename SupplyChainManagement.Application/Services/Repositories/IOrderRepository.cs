@@ -9,4 +9,6 @@ public interface IOrderRepository
     Task<List<Order>> GetAllAsync();
     Task UpdateAsync(Order order);
     Task DeleteAsync(Guid id);
+    Task<bool> AnyByProductIdAsync(Guid productId);
+    Task<bool> AnyBySupplierIdAsync(int supplierId);
 }

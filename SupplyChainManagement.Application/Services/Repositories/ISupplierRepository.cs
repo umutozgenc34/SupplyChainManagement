@@ -9,4 +9,5 @@ public interface ISupplierRepository
     Task<List<Supplier>> GetAllAsync();
     Task UpdateAsync(Supplier supplier);
     Task DeleteAsync(int id);
+    Task<bool> ExistsAsync(int id);
 }

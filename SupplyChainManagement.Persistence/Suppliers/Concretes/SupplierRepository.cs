@@ -28,4 +28,6 @@ public class SupplierRepository(AppDbContext context) : ISupplierRepository
         context.Suppliers.Remove(supplier);
         await context.SaveChangesAsync();
     }
+
+    public async Task<bool> ExistsAsync(int id) => await context.Suppliers.AnyAsync(x => x.Id == id);
 }

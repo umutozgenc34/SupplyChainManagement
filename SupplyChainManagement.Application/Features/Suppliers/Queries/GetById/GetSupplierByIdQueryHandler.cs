@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Application.Responses;
 using MediatR;
+using System.Net;
 using SupplyChainManagement.Application.Features.Suppliers.Dtos;
 using SupplyChainManagement.Application.Services.Repositories;
 
@@ -13,7 +14,7 @@ public class GetSupplierByIdQueryHandler(ISupplierRepository supplierRepository,
     {
         var supplier = await supplierRepository.GetByIdAsync(request.Id);
         if (supplier is null)
-            return ServiceResult<SupplierDto>.Failure("Supplier not found");
+            return ServiceResult<SupplierDto>.Failure("Supplier not found", HttpStatusCode.NotFound);
 
         var supplierAsDto = mapper.Map<SupplierDto>(supplier);
         return ServiceResult<SupplierDto>.SuccessResult(supplierAsDto);

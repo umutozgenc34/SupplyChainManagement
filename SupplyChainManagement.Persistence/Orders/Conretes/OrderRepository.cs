@@ -31,4 +31,10 @@ public class OrderRepository(AppDbContext context) : IOrderRepository
         context.Orders.Remove(order);
         await context.SaveChangesAsync();
     }
+
+    public async Task<bool> AnyByProductIdAsync(Guid productId) =>
+        await context.OrderItems.AnyAsync(x => x.ProductId == productId);
+
+    public async Task<bool> AnyBySupplierIdAsync(int supplierId) =>
+        await context.OrderItems.AnyAsync(x => x.Product.SupplierId == supplierId);
 }

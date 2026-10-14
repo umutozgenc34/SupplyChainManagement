@@ -1,6 +1,7 @@
 using AutoMapper;
 using Core.Application.Responses;
 using MediatR;
+using System.Net;
 using SupplyChainManagement.Application.Features.Orders.Dtos;
 using SupplyChainManagement.Application.Services.Repositories;
 using SupplyChainManagement.Domain.Orders;
@@ -14,7 +15,7 @@ public class UpdateOrderCommandHandler(IOrderRepository orderRepository, IProduc
         var order = await orderRepository.GetByIdAsync(request.Id);
         if (order is null)
         {
-            return ServiceResult<OrderDto>.Failure("Order not found");
+            return ServiceResult<OrderDto>.Failure("Order not found", HttpStatusCode.NotFound);
         }
 
         var orderItems = new List<OrderItem>();

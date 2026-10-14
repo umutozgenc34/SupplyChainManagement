@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Application.Responses;
 using MediatR;
+using System.Net;
 using SupplyChainManagement.Application.Features.Products.Dtos;
 using SupplyChainManagement.Application.Services.Repositories;
 
@@ -13,7 +14,7 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository, IM
     {
         var product = await productRepository.GetByIdAsync(request.Id);
         if (product is null)
-            return ServiceResult<ProductDto>.Failure("Product not found");
+            return ServiceResult<ProductDto>.Failure("Product not found", HttpStatusCode.NotFound);
 
         var productAsDto = mapper.Map<ProductDto>(product);
         return ServiceResult<ProductDto>.SuccessResult(productAsDto);
