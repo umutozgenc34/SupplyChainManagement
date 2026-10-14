@@ -6,6 +6,7 @@ using SupplyChainManagement.Persistence.Contexts;
 using SupplyChainManagement.Persistence.Orders.Conretes;
 using SupplyChainManagement.Persistence.Products.Concretes;
 using SupplyChainManagement.Persistence.Suppliers.Concretes;
+using SupplyChainManagement.Persistence.Users.Concretes;
 
 
 namespace SupplyChainManagement.Persistence.Extensions;
@@ -22,6 +23,7 @@ public static class PersistenceExtensions
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ISupplierRepository,SupplierRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }

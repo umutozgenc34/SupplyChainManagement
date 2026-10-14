@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SupplyChainManagement.Application.Features.Orders.Commands.ChangeStatus;
 using SupplyChainManagement.Application.Features.Orders.Commands.Create;
@@ -6,6 +7,7 @@ using SupplyChainManagement.Application.Features.Orders.Commands.Delete;
 using SupplyChainManagement.Application.Features.Orders.Commands.Update;
 using SupplyChainManagement.Application.Features.Orders.Queries.GetAll;
 using SupplyChainManagement.Application.Features.Orders.Queries.GetById;
+using SupplyChainManagement.Domain.Users;
 
 namespace SupplyChainManagement.Presentation.Controllers;
 
@@ -26,6 +28,7 @@ public class OrdersController(IMediator mediator) : CustomBaseController
     }
 
     [HttpPatch("{id:guid}/status")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> ChangeStatus(Guid id, [FromBody] ChangeOrderStatusCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command with { Id = id }, cancellationToken);

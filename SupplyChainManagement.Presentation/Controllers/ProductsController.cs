@@ -1,16 +1,19 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SupplyChainManagement.Application.Features.Products.Commands.Create;
 using SupplyChainManagement.Application.Features.Products.Commands.Delete;
 using SupplyChainManagement.Application.Features.Products.Commands.Update;
 using SupplyChainManagement.Application.Features.Products.Queries.GetAll;
 using SupplyChainManagement.Application.Features.Products.Queries.GetById;
+using SupplyChainManagement.Domain.Users;
 
 namespace SupplyChainManagement.Presentation.Controllers;
 
 public class ProductsController(IMediator mediator) : CustomBaseController
 {
     [HttpPost]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> Create([FromBody] CreateProductCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
@@ -32,6 +35,7 @@ public class ProductsController(IMediator mediator) : CustomBaseController
     }
 
     [HttpPut]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> Update([FromBody] UpdateProductCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
@@ -39,6 +43,7 @@ public class ProductsController(IMediator mediator) : CustomBaseController
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new DeleteProductCommand(id), cancellationToken);

@@ -1,16 +1,19 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SupplyChainManagement.Application.Features.Suppliers.Commands.Create;
 using SupplyChainManagement.Application.Features.Suppliers.Commands.Delete;
 using SupplyChainManagement.Application.Features.Suppliers.Commands.Update;
 using SupplyChainManagement.Application.Features.Suppliers.Queries.GetAll;
 using SupplyChainManagement.Application.Features.Suppliers.Queries.GetById;
+using SupplyChainManagement.Domain.Users;
 
 namespace SupplyChainManagement.Presentation.Controllers;
 
 public class SuppliersController(IMediator mediator) : CustomBaseController
 {
     [HttpPost]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> Create([FromBody] CreateSupplierCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
@@ -32,6 +35,7 @@ public class SuppliersController(IMediator mediator) : CustomBaseController
     }
 
     [HttpPut]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> Update([FromBody] UpdateSupplierCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
@@ -39,6 +43,7 @@ public class SuppliersController(IMediator mediator) : CustomBaseController
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new DeleteSupplierCommand(id), cancellationToken);
