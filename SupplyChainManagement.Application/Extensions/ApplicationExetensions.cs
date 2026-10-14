@@ -17,6 +17,7 @@ public static class ApplicationExetensions
         services.AddMediatR(con => {
             con.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
             con.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            con.AddOpenBehavior(typeof(CachingBehavior<,>));
         });
         return services;
     }
