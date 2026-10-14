@@ -7,27 +7,29 @@ namespace SupplyChainManagement.Persistence.Suppliers.Concretes;
 
 public class SupplierRepository(AppDbContext context) : ISupplierRepository
 {
-    public async Task AddAsync(Supplier supplier)
+    public async Task AddAsync(Supplier supplier, CancellationToken cancellationToken = default) =>
+        await context.Suppliers.AddAsync(supplier, cancellationToken);
+
+    public async Task<Supplier?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        await context.Suppliers.FindAsync([id], cancellationToken);
+
+    public async Task<(List<Supplier> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        await context.Suppliers.AddAsync(supplier);
-        await context.SaveChangesAsync();
+        var totalCount = await context.Suppliers.CountAsync(cancellationToken);
+        var items = await context.Suppliers
+            .AsNoTracking()
+            .OrderBy(x => x.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 
-    public async Task<Supplier?> GetByIdAsync(int id) => await context.Suppliers.FindAsync(id);
-    public async Task<List<Supplier>> GetAllAsync() => await context.Suppliers.ToListAsync();
+    public void Update(Supplier supplier) => context.Suppliers.Update(supplier);
 
-    public async Task UpdateAsync(Supplier supplier)
-    {
-        context.Suppliers.Update(supplier);
-        await context.SaveChangesAsync();
-    }
+    public void Delete(Supplier supplier) => context.Suppliers.Remove(supplier);
 
-    public async Task DeleteAsync(int id)
-    {
-        var supplier = await context.Suppliers.FindAsync(id);
-        context.Suppliers.Remove(supplier);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task<bool> ExistsAsync(int id) => await context.Suppliers.AnyAsync(x => x.Id == id);
+    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default) =>
+        await context.Suppliers.AnyAsync(x => x.Id == id, cancellationToken);
 }

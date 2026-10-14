@@ -5,19 +5,20 @@ using SupplyChainManagement.Application.Services.Repositories;
 
 namespace SupplyChainManagement.Application.Features.Suppliers.Commands.Delete;
 
-public class DeleteSupplierCommandHandler(ISupplierRepository supplierRepository, IOrderRepository orderRepository)
+public class DeleteSupplierCommandHandler(ISupplierRepository supplierRepository, IOrderRepository orderRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<DeleteSupplierCommand, ServiceResult>
 {
     public async Task<ServiceResult> Handle(DeleteSupplierCommand request, CancellationToken cancellationToken)
     {
-        var supplier = await supplierRepository.GetByIdAsync(request.Id);
+        var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
         if (supplier is null)
             return ServiceResult.Failure("Supplier not found", HttpStatusCode.NotFound);
 
-        if (await orderRepository.AnyBySupplierIdAsync(request.Id))
+        if (await orderRepository.AnyBySupplierIdAsync(request.Id, cancellationToken))
             return ServiceResult.Failure("Supplier has products used in orders and cannot be deleted.", HttpStatusCode.Conflict);
 
-        await supplierRepository.DeleteAsync(request.Id);
+        supplierRepository.Delete(supplier);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return ServiceResult.SuccessResult("Supplier deleted successfully");
     }
 }

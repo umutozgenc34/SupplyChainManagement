@@ -3,39 +3,37 @@ using Core.Application.Responses;
 using MediatR;
 using System.Net;
 using SupplyChainManagement.Application.Features.Orders.Dtos;
+using SupplyChainManagement.Application.Features.Orders.Rules;
 using SupplyChainManagement.Application.Services.Repositories;
-using SupplyChainManagement.Domain.Orders;
 
 namespace SupplyChainManagement.Application.Features.Orders.Commands.Update;
 
-public class UpdateOrderCommandHandler(IOrderRepository orderRepository, IProductRepository productRepository, IMapper mapper) : IRequestHandler<UpdateOrderCommand, ServiceResult<OrderDto>>
+public class UpdateOrderCommandHandler(IOrderRepository orderRepository, IProductRepository productRepository, IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<UpdateOrderCommand, ServiceResult<OrderDto>>
 {
     public async Task<ServiceResult<OrderDto>> Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
     {
-        var order = await orderRepository.GetByIdAsync(request.Id);
+        var order = await orderRepository.GetByIdAsync(request.Id, cancellationToken);
         if (order is null)
-        {
             return ServiceResult<OrderDto>.Failure("Order not found", HttpStatusCode.NotFound);
-        }
 
-        var orderItems = new List<OrderItem>();
+        var productIds = order.OrderItems.Select(i => i.ProductId)
+            .Concat(request.OrderItems.Select(i => i.ProductId))
+            .Distinct();
+        var products = (await productRepository.GetByIdsAsync(productIds, cancellationToken)).ToDictionary(p => p.Id);
 
-        foreach (var item in request.OrderItems)
-        {
-            var product = await productRepository.GetByIdAsync(item.ProductId);
-            if (product is null)
-            {
-                return ServiceResult<OrderDto>.Failure($"Product with ID {item.ProductId} not found.");
-            }
+        if (OrderStockRules.HoldsStock(order.Status))
+            OrderStockRules.ReleaseStock(order.OrderItems, products);
 
-            orderItems.Add(new OrderItem(item.ProductId, item.Quantity, product.Price));
-        }
+        var orderItemsResult = OrderStockRules.CreateOrderItems(request.OrderItems, products, OrderStockRules.HoldsStock(request.Status));
+        if (!orderItemsResult.Success)
+            return ServiceResult<OrderDto>.Failure(orderItemsResult.Message);
 
         order.Status = request.Status;
         order.OrderItems.Clear();
-        order.OrderItems.AddRange(orderItems);
+        order.OrderItems.AddRange(orderItemsResult.Data!);
 
-        await orderRepository.UpdateAsync(order);
+        orderRepository.Update(order);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var orderAsDto = mapper.Map<OrderDto>(order);
 

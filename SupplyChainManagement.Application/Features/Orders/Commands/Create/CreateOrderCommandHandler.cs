@@ -2,42 +2,32 @@
 using Core.Application.Responses;
 using MediatR;
 using SupplyChainManagement.Application.Features.Orders.Dtos;
+using SupplyChainManagement.Application.Features.Orders.Rules;
 using SupplyChainManagement.Application.Services.Repositories;
 using SupplyChainManagement.Domain.Orders;
 
 namespace SupplyChainManagement.Application.Features.Orders.Commands.Create;
 
-public class CreateOrderCommandHandler(IOrderRepository orderRepository,IMapper mapper,IProductRepository productRepository) : IRequestHandler<CreateOrderCommand, ServiceResult<OrderDto>>
+public class CreateOrderCommandHandler(IOrderRepository orderRepository, IProductRepository productRepository, IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<CreateOrderCommand, ServiceResult<OrderDto>>
 {
     public async Task<ServiceResult<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
-        var orderItems = new List<OrderItem>();
+        var productIds = request.OrderItems.Select(i => i.ProductId).Distinct();
+        var products = (await productRepository.GetByIdsAsync(productIds, cancellationToken)).ToDictionary(p => p.Id);
 
-        foreach (var item in request.OrderItems)
-        {
-            var product = await productRepository.GetByIdAsync(item.ProductId);
-            if (product is null)
-            {
-                return ServiceResult<OrderDto>.Failure($"Product with ID {item.ProductId} not found.");
-            }
-
-            var orderItem = new OrderItem
-            {
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                Price = product.Price 
-            };
-            orderItems.Add(orderItem);
-        }
+        var orderItemsResult = OrderStockRules.CreateOrderItems(request.OrderItems, products, reserveStock: true);
+        if (!orderItemsResult.Success)
+            return ServiceResult<OrderDto>.Failure(orderItemsResult.Message);
 
         var order = new Order
         {
             OrderDate = DateTime.UtcNow,
             Status = OrderStatus.Pending,
-            OrderItems = orderItems
+            OrderItems = orderItemsResult.Data!
         };
 
-        await orderRepository.AddAsync(order);
+        await orderRepository.AddAsync(order, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var responseAsDto = mapper.Map<OrderDto>(order);
 

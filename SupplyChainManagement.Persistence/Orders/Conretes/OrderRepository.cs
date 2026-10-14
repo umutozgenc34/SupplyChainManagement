@@ -7,34 +7,33 @@ namespace SupplyChainManagement.Persistence.Orders.Conretes;
 
 public class OrderRepository(AppDbContext context) : IOrderRepository
 {
-    public async Task AddAsync(Order order)
+    public async Task AddAsync(Order order, CancellationToken cancellationToken = default) =>
+        await context.Orders.AddAsync(order, cancellationToken);
+
+    public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        await context.Orders.Include(x => x.OrderItems).FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+    public async Task<(List<Order> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        await context.Orders.AddAsync(order);
-        await context.SaveChangesAsync();
+        var totalCount = await context.Orders.CountAsync(cancellationToken);
+        var items = await context.Orders
+            .AsNoTracking()
+            .Include(x => x.OrderItems)
+            .OrderByDescending(x => x.OrderDate)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 
-    public async Task<Order?> GetByIdAsync(Guid id) =>
-        await context.Orders.Include(x => x.OrderItems).FirstOrDefaultAsync(x => x.Id == id);
+    public void Update(Order order) => context.Orders.Update(order);
 
-    public async Task<List<Order>> GetAllAsync() =>
-        await context.Orders.Include(x => x.OrderItems).ToListAsync();
+    public void Delete(Order order) => context.Orders.Remove(order);
 
-    public async Task UpdateAsync(Order order)
-    {
-        context.Orders.Update(order);
-        await context.SaveChangesAsync();
-    }
+    public async Task<bool> AnyByProductIdAsync(Guid productId, CancellationToken cancellationToken = default) =>
+        await context.OrderItems.AnyAsync(x => x.ProductId == productId, cancellationToken);
 
-    public async Task DeleteAsync(Guid id)
-    {
-        var order = await context.Orders.FindAsync(id);
-        context.Orders.Remove(order);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task<bool> AnyByProductIdAsync(Guid productId) =>
-        await context.OrderItems.AnyAsync(x => x.ProductId == productId);
-
-    public async Task<bool> AnyBySupplierIdAsync(int supplierId) =>
-        await context.OrderItems.AnyAsync(x => x.Product.SupplierId == supplierId);
+    public async Task<bool> AnyBySupplierIdAsync(int supplierId, CancellationToken cancellationToken = default) =>
+        await context.OrderItems.AnyAsync(x => x.Product.SupplierId == supplierId, cancellationToken);
 }

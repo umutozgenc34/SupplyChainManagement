@@ -36,7 +36,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Orders.OrderItem", b =>
@@ -63,7 +63,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems", (string)null);
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Products.Product", b =>
@@ -83,6 +83,12 @@ namespace SupplyChainManagement.Persistence.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<int>("SupplierId")
                         .HasColumnType("int");
 
@@ -90,7 +96,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasIndex("SupplierId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Suppliers.Supplier", b =>
@@ -118,7 +124,7 @@ namespace SupplyChainManagement.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Suppliers", (string)null);
+                    b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("SupplyChainManagement.Domain.Orders.OrderItem", b =>

@@ -7,13 +7,14 @@ using SupplyChainManagement.Domain.Suppliers;
 
 namespace SupplyChainManagement.Application.Features.Suppliers.Commands.Create;
 
-public class CreateSupplierCommandHandler(ISupplierRepository supplierRepository, IMapper mapper)
+public class CreateSupplierCommandHandler(ISupplierRepository supplierRepository, IUnitOfWork unitOfWork, IMapper mapper)
     : IRequestHandler<CreateSupplierCommand, ServiceResult<SupplierDto>>
 {
     public async Task<ServiceResult<SupplierDto>> Handle(CreateSupplierCommand request, CancellationToken cancellationToken)
     {
         var supplier = mapper.Map<Supplier>(request);
-        await supplierRepository.AddAsync(supplier);
+        await supplierRepository.AddAsync(supplier, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         var supplierAsDto = mapper.Map<SupplierDto>(supplier);
 
         return ServiceResult<SupplierDto>.SuccessResult(supplierAsDto, "Supplier created successfully");

@@ -4,10 +4,10 @@ namespace SupplyChainManagement.Application.Services.Repositories;
 
 public interface ISupplierRepository
 {
-    Task AddAsync(Supplier supplier);
-    Task<Supplier?> GetByIdAsync(int id);
-    Task<List<Supplier>> GetAllAsync();
-    Task UpdateAsync(Supplier supplier);
-    Task DeleteAsync(int id);
-    Task<bool> ExistsAsync(int id);
+    Task AddAsync(Supplier supplier, CancellationToken cancellationToken = default);
+    Task<Supplier?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<(List<Supplier> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    void Update(Supplier supplier);
+    void Delete(Supplier supplier);
+    Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
 }

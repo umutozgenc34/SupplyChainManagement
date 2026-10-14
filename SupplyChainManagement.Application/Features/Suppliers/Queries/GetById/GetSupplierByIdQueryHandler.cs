@@ -12,7 +12,7 @@ public class GetSupplierByIdQueryHandler(ISupplierRepository supplierRepository,
 {
     public async Task<ServiceResult<SupplierDto>> Handle(GetSupplierByIdQuery request, CancellationToken cancellationToken)
     {
-        var supplier = await supplierRepository.GetByIdAsync(request.Id);
+        var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
         if (supplier is null)
             return ServiceResult<SupplierDto>.Failure("Supplier not found", HttpStatusCode.NotFound);
 

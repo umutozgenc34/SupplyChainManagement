@@ -11,7 +11,7 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
             .MaximumLength(100).WithMessage("Product name cannot exceed 100 characters.");
 
         RuleFor(x => x.Quantity)
-            .GreaterThan(0).WithMessage("Quantity must be greater than zero.");
+            .GreaterThanOrEqualTo(0).WithMessage("Quantity cannot be negative.");
 
         RuleFor(x => x.Price)
             .GreaterThan(0).WithMessage("Price must be greater than zero.");

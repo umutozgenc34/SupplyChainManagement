@@ -1,6 +1,7 @@
 using Core.Application.Responses;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace SupplyChainManagement.Presentation.ExceptionHandlers;
@@ -14,6 +15,9 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             ValidationException validationException => ServiceResult.Failure(
                 "Validation failed.",
                 validationException.Errors.Select(e => e.ErrorMessage).ToList()),
+            DbUpdateConcurrencyException => ServiceResult.Failure(
+                "The record was modified by another request. Please try again.",
+                HttpStatusCode.Conflict),
             _ => ServiceResult.Failure("An unexpected error occurred.", HttpStatusCode.InternalServerError)
         };
 

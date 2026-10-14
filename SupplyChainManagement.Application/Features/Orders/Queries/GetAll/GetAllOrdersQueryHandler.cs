@@ -6,13 +6,14 @@ using SupplyChainManagement.Application.Services.Repositories;
 
 namespace SupplyChainManagement.Application.Features.Orders.Queries.GetAll;
 
-public class GetAllOrdersQueryHandler(IOrderRepository orderRepository,IMapper mapper) : IRequestHandler<GetAllOrdersQuery, ServiceResult<List<OrderDto>>>
+public class GetAllOrdersQueryHandler(IOrderRepository orderRepository,IMapper mapper) : IRequestHandler<GetAllOrdersQuery, ServiceResult<PagedResult<OrderDto>>>
 {
-    public async Task<ServiceResult<List<OrderDto>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<PagedResult<OrderDto>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
     {
-        var orders = await orderRepository.GetAllAsync();
+        var (orders, totalCount) = await orderRepository.GetPagedAsync(request.PageNumber, request.PageSize, cancellationToken);
         var orderAsDtos = mapper.Map<List<OrderDto>>(orders);
 
-        return ServiceResult<List<OrderDto>>.SuccessResult(orderAsDtos);
+        return ServiceResult<PagedResult<OrderDto>>.SuccessResult(
+            new PagedResult<OrderDto>(orderAsDtos, request.PageNumber, request.PageSize, totalCount));
     }
 }

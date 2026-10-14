@@ -11,7 +11,7 @@ public class GetOrderByIdQueryHandler(IOrderRepository orderRepository,IMapper m
 {
     public async Task<ServiceResult<OrderDto>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
-        var order = await orderRepository.GetByIdAsync(request.Id);
+        var order = await orderRepository.GetByIdAsync(request.Id, cancellationToken);
         if (order is null)
             return ServiceResult<OrderDto>.Failure("Order not found", HttpStatusCode.NotFound);
 

@@ -4,5 +4,4 @@ using SupplyChainManagement.Application.Features.Suppliers.Dtos;
 
 namespace SupplyChainManagement.Application.Features.Suppliers.Queries.GetAll;
 
-
-public record GetAllSuppliersQuery() : IRequest<ServiceResult<List<SupplierDto>>>;
+public record GetAllSuppliersQuery(int PageNumber = 1, int PageSize = 10) : IRequest<ServiceResult<PagedResult<SupplierDto>>>;

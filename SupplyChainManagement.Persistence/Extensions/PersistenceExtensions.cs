@@ -22,6 +22,7 @@ public static class PersistenceExtensions
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ISupplierRepository,SupplierRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
 }

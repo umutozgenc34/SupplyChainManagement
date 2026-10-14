@@ -16,6 +16,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(p => p.Price).IsRequired().HasColumnType("decimal(18,2)");
 
+        builder.Property(p => p.RowVersion).IsRowVersion();
+
         builder.HasOne(p => p.Supplier)
               .WithMany(s => s.Products)
               .HasForeignKey(p => p.SupplierId)

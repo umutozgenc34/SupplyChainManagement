@@ -12,7 +12,7 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository, IM
 {
     public async Task<ServiceResult<ProductDto>> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
-        var product = await productRepository.GetByIdAsync(request.Id);
+        var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         if (product is null)
             return ServiceResult<ProductDto>.Failure("Product not found", HttpStatusCode.NotFound);
 

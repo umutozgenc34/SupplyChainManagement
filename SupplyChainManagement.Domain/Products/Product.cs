@@ -11,4 +11,6 @@ public sealed class Product : BaseEntity<Guid>
 
     public int SupplierId { get; set; }
     public Supplier Supplier { get; set; } = null!;
+
+    public byte[] RowVersion { get; set; } = default!;
 }
