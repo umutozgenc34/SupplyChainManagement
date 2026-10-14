@@ -4,7 +4,7 @@ services:
     container_name: supplychain-mssql
     restart: always
     environment:
-      SA_PASSWORD: "Scsql123"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"

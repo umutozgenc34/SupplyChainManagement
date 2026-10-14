@@ -1,7 +1,9 @@
+using DotNetEnv;
 using SupplyChainManagement.Application;
 using SupplyChainManagement.Application.Extensions;
 using SupplyChainManagement.Persistence.Extensions;
 
+Env.NoClobber().TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
