@@ -1,3 +1,4 @@
+using SupplyChainManagement.Application.Features.Orders.Commands.ChangeStatus;
 using SupplyChainManagement.Application.Features.Orders.Commands.Create;
 using SupplyChainManagement.Application.Features.Orders.Commands.Update;
 using SupplyChainManagement.Application.Features.Orders.Dtos;
@@ -29,13 +30,19 @@ public class ValidatorTests
     }
 
     [Fact]
-    public void UpdateOrder_WithUndefinedStatus_IsInvalid()
+    public void ChangeOrderStatus_WithUndefinedStatus_IsInvalid()
     {
-        var command = new UpdateOrderCommand(Guid.NewGuid(), [new OrderItemDto { ProductId = Guid.NewGuid(), Quantity = 1 }], (OrderStatus)9);
-
-        var result = new UpdateOrderCommandValidator().Validate(command);
+        var result = new ChangeOrderStatusCommandValidator().Validate(new ChangeOrderStatusCommand(Guid.NewGuid(), (OrderStatus)9));
 
         Assert.Contains(result.Errors, e => e.ErrorMessage == "Invalid order status.");
+    }
+
+    [Fact]
+    public void UpdateOrder_WithNoItems_IsInvalid()
+    {
+        var result = new UpdateOrderCommandValidator().Validate(new UpdateOrderCommand(Guid.NewGuid(), []));
+
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Order must contain at least one item.");
     }
 
     [Theory]

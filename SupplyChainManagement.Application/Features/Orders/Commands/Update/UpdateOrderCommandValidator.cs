@@ -9,9 +9,6 @@ public class UpdateOrderCommandValidator : AbstractValidator<UpdateOrderCommand>
         RuleFor(x => x.Id)
             .NotEmpty().WithMessage("Id is required.");
 
-        RuleFor(x => x.Status)
-            .IsInEnum().WithMessage("Invalid order status.");
-
         RuleFor(x => x.OrderItems)
             .NotEmpty().WithMessage("Order must contain at least one item.")
             .Must(items => items.All(i => i.Quantity > 0)).WithMessage("Each order item must have a quantity greater than zero.");

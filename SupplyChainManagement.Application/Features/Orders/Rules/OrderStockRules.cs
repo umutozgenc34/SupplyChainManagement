@@ -7,10 +7,9 @@ namespace SupplyChainManagement.Application.Features.Orders.Rules;
 
 public static class OrderStockRules
 {
-    public static ServiceResult<List<OrderItem>> CreateOrderItems(
+    public static ServiceResult<List<OrderItem>> ReserveStock(
         IEnumerable<OrderItemDto> requestedItems,
-        IReadOnlyDictionary<Guid, Product> products,
-        bool reserveStock)
+        IReadOnlyDictionary<Guid, Product> products)
     {
         var orderItems = new List<OrderItem>();
 
@@ -21,15 +20,11 @@ public static class OrderStockRules
 
             var quantity = group.Sum(i => i.Quantity);
 
-            if (reserveStock)
-            {
-                if (product.Quantity < quantity)
-                    return ServiceResult<List<OrderItem>>.Failure(
-                        $"Insufficient stock for product '{product.Name}'. Available: {product.Quantity}, requested: {quantity}.");
+            if (product.Quantity < quantity)
+                return ServiceResult<List<OrderItem>>.Failure(
+                    $"Insufficient stock for product '{product.Name}'. Available: {product.Quantity}, requested: {quantity}.");
 
-                product.Quantity -= quantity;
-            }
-
+            product.Quantity -= quantity;
             orderItems.Add(new OrderItem(product.Id, quantity, product.Price));
         }
 
@@ -44,6 +39,4 @@ public static class OrderStockRules
                 product.Quantity += item.Quantity;
         }
     }
-
-    public static bool HoldsStock(OrderStatus status) => status != OrderStatus.Canceled;
 }

@@ -16,6 +16,9 @@ public class DeleteOrderCommandHandler(IOrderRepository orderRepository, IProduc
         if (order is null)
             return ServiceResult.Failure("Order not found", HttpStatusCode.NotFound);
 
+        if (!order.IsDeletable)
+            return ServiceResult.Failure($"Only pending or canceled orders can be deleted. Current status: {order.Status}.", HttpStatusCode.Conflict);
+
         if (order.Status == OrderStatus.Pending)
         {
             var productIds = order.OrderItems.Select(i => i.ProductId).Distinct();

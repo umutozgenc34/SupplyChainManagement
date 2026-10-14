@@ -1,4 +1,5 @@
 using Moq;
+using SupplyChainManagement.Application.Features.Orders.Commands.ChangeStatus;
 using SupplyChainManagement.Application.Features.Orders.Commands.Create;
 using SupplyChainManagement.Application.Features.Orders.Commands.Delete;
 using SupplyChainManagement.Application.Features.Orders.Commands.Update;
@@ -66,9 +67,25 @@ public class OrderCommandHandlerTests
     {
         var handler = new UpdateOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
 
-        var result = await handler.Handle(new UpdateOrderCommand(Guid.NewGuid(), [], OrderStatus.Pending), CancellationToken.None);
+        var result = await handler.Handle(new UpdateOrderCommand(Guid.NewGuid(), []), CancellationToken.None);
 
         Assert.Equal(HttpStatusCode.NotFound, result.Status);
+    }
+
+    [Fact]
+    public async Task Update_WhenOrderNotPending_ReturnsConflictAndKeepsStock()
+    {
+        var product = TestData.Product(quantity: 7);
+        var order = TestData.Order(OrderStatus.Approved, (product, 3));
+        SetupOrder(order);
+        SetupProducts(product);
+        var handler = new UpdateOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
+
+        var result = await handler.Handle(new UpdateOrderCommand(order.Id, Items(product, 5)), CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.Conflict, result.Status);
+        Assert.Equal(7, product.Quantity);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -80,41 +97,12 @@ public class OrderCommandHandlerTests
         SetupProducts(product);
         var handler = new UpdateOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
 
-        var result = await handler.Handle(new UpdateOrderCommand(order.Id, Items(product, 5), OrderStatus.Pending), CancellationToken.None);
+        var result = await handler.Handle(new UpdateOrderCommand(order.Id, Items(product, 5)), CancellationToken.None);
 
         Assert.True(result.Success);
         Assert.Equal(5, product.Quantity);
         Assert.Equal(5, Assert.Single(order.OrderItems).Quantity);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Update_ToCanceled_ReleasesStock()
-    {
-        var product = TestData.Product(quantity: 7);
-        var order = TestData.Order(OrderStatus.Pending, (product, 3));
-        SetupOrder(order);
-        SetupProducts(product);
-        var handler = new UpdateOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
-
-        await handler.Handle(new UpdateOrderCommand(order.Id, Items(product, 3), OrderStatus.Canceled), CancellationToken.None);
-
-        Assert.Equal(10, product.Quantity);
-        Assert.Equal(OrderStatus.Canceled, order.Status);
-    }
-
-    [Fact]
-    public async Task Update_FromCanceledToPending_ReservesStockAgain()
-    {
-        var product = TestData.Product(quantity: 10);
-        var order = TestData.Order(OrderStatus.Canceled, (product, 3));
-        SetupOrder(order);
-        SetupProducts(product);
-        var handler = new UpdateOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
-
-        await handler.Handle(new UpdateOrderCommand(order.Id, Items(product, 3), OrderStatus.Pending), CancellationToken.None);
-
-        Assert.Equal(7, product.Quantity);
     }
 
     [Fact]
@@ -126,7 +114,7 @@ public class OrderCommandHandlerTests
         SetupProducts(product);
         var handler = new UpdateOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
 
-        var result = await handler.Handle(new UpdateOrderCommand(order.Id, Items(product, 4), OrderStatus.Pending), CancellationToken.None);
+        var result = await handler.Handle(new UpdateOrderCommand(order.Id, Items(product, 4)), CancellationToken.None);
 
         Assert.Equal(HttpStatusCode.BadRequest, result.Status);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -161,17 +149,92 @@ public class OrderCommandHandlerTests
     }
 
     [Fact]
-    public async Task Delete_DeliveredOrder_DoesNotReleaseStock()
+    public async Task Delete_CanceledOrder_DeletesWithoutReleasingStock()
     {
         var product = TestData.Product(quantity: 7);
-        var order = TestData.Order(OrderStatus.Delivered, (product, 3));
+        var order = TestData.Order(OrderStatus.Canceled, (product, 3));
         SetupOrder(order);
         SetupProducts(product);
         var handler = new DeleteOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object);
 
-        await handler.Handle(new DeleteOrderCommand(order.Id), CancellationToken.None);
+        var result = await handler.Handle(new DeleteOrderCommand(order.Id), CancellationToken.None);
 
+        Assert.True(result.Success);
         Assert.Equal(7, product.Quantity);
         _orderRepository.Verify(r => r.Delete(order), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(OrderStatus.Approved)]
+    [InlineData(OrderStatus.Shipped)]
+    [InlineData(OrderStatus.Delivered)]
+    public async Task Delete_ProcessedOrder_ReturnsConflict(OrderStatus status)
+    {
+        var product = TestData.Product(quantity: 7);
+        var order = TestData.Order(status, (product, 3));
+        SetupOrder(order);
+        var handler = new DeleteOrderCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object);
+
+        var result = await handler.Handle(new DeleteOrderCommand(order.Id), CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.Conflict, result.Status);
+        _orderRepository.Verify(r => r.Delete(It.IsAny<Order>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ChangeStatus_WhenOrderMissing_ReturnsNotFound()
+    {
+        var handler = new ChangeOrderStatusCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
+
+        var result = await handler.Handle(new ChangeOrderStatusCommand(Guid.NewGuid(), OrderStatus.Approved), CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.NotFound, result.Status);
+    }
+
+    [Fact]
+    public async Task ChangeStatus_WithAllowedTransition_UpdatesStatusWithoutTouchingStock()
+    {
+        var product = TestData.Product(quantity: 7);
+        var order = TestData.Order(OrderStatus.Pending, (product, 3));
+        SetupOrder(order);
+        var handler = new ChangeOrderStatusCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
+
+        var result = await handler.Handle(new ChangeOrderStatusCommand(order.Id, OrderStatus.Approved), CancellationToken.None);
+
+        Assert.True(result.Success);
+        Assert.Equal(OrderStatus.Approved, order.Status);
+        Assert.Equal(7, product.Quantity);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangeStatus_ToCanceled_ReleasesStock()
+    {
+        var product = TestData.Product(quantity: 7);
+        var order = TestData.Order(OrderStatus.Approved, (product, 3));
+        SetupOrder(order);
+        SetupProducts(product);
+        var handler = new ChangeOrderStatusCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
+
+        await handler.Handle(new ChangeOrderStatusCommand(order.Id, OrderStatus.Canceled), CancellationToken.None);
+
+        Assert.Equal(OrderStatus.Canceled, order.Status);
+        Assert.Equal(10, product.Quantity);
+    }
+
+    [Fact]
+    public async Task ChangeStatus_WithInvalidTransition_ReturnsConflictAndDoesNotSave()
+    {
+        var product = TestData.Product(quantity: 7);
+        var order = TestData.Order(OrderStatus.Shipped, (product, 3));
+        SetupOrder(order);
+        var handler = new ChangeOrderStatusCommandHandler(_orderRepository.Object, _productRepository.Object, _unitOfWork.Object, TestData.Mapper);
+
+        var result = await handler.Handle(new ChangeOrderStatusCommand(order.Id, OrderStatus.Canceled), CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.Conflict, result.Status);
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+        Assert.Equal(7, product.Quantity);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

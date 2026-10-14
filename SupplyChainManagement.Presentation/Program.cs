@@ -3,12 +3,14 @@ using SupplyChainManagement.Application;
 using SupplyChainManagement.Application.Extensions;
 using SupplyChainManagement.Persistence.Extensions;
 using SupplyChainManagement.Presentation.ExceptionHandlers;
+using System.Text.Json.Serialization;
 
 Env.NoClobber().TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddPersistenceExtensions(builder.Configuration).AddApplicationExtension(typeof( ApplicationAssembly));
 

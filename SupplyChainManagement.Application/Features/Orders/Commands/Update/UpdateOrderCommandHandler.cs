@@ -16,19 +16,20 @@ public class UpdateOrderCommandHandler(IOrderRepository orderRepository, IProduc
         if (order is null)
             return ServiceResult<OrderDto>.Failure("Order not found", HttpStatusCode.NotFound);
 
+        if (!order.IsEditable)
+            return ServiceResult<OrderDto>.Failure($"Only pending orders can be edited. Current status: {order.Status}.", HttpStatusCode.Conflict);
+
         var productIds = order.OrderItems.Select(i => i.ProductId)
             .Concat(request.OrderItems.Select(i => i.ProductId))
             .Distinct();
         var products = (await productRepository.GetByIdsAsync(productIds, cancellationToken)).ToDictionary(p => p.Id);
 
-        if (OrderStockRules.HoldsStock(order.Status))
-            OrderStockRules.ReleaseStock(order.OrderItems, products);
+        OrderStockRules.ReleaseStock(order.OrderItems, products);
 
-        var orderItemsResult = OrderStockRules.CreateOrderItems(request.OrderItems, products, OrderStockRules.HoldsStock(request.Status));
+        var orderItemsResult = OrderStockRules.ReserveStock(request.OrderItems, products);
         if (!orderItemsResult.Success)
             return ServiceResult<OrderDto>.Failure(orderItemsResult.Message);
 
-        order.Status = request.Status;
         order.OrderItems.Clear();
         order.OrderItems.AddRange(orderItemsResult.Data!);
 

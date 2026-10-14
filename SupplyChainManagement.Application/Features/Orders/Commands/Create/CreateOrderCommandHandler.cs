@@ -15,7 +15,7 @@ public class CreateOrderCommandHandler(IOrderRepository orderRepository, IProduc
         var productIds = request.OrderItems.Select(i => i.ProductId).Distinct();
         var products = (await productRepository.GetByIdsAsync(productIds, cancellationToken)).ToDictionary(p => p.Id);
 
-        var orderItemsResult = OrderStockRules.CreateOrderItems(request.OrderItems, products, reserveStock: true);
+        var orderItemsResult = OrderStockRules.ReserveStock(request.OrderItems, products);
         if (!orderItemsResult.Success)
             return ServiceResult<OrderDto>.Failure(orderItemsResult.Message);
 

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SupplyChainManagement.Application.Features.Orders.Commands.ChangeStatus;
 using SupplyChainManagement.Application.Features.Orders.Commands.Create;
 using SupplyChainManagement.Application.Features.Orders.Commands.Delete;
 using SupplyChainManagement.Application.Features.Orders.Commands.Update;
@@ -21,6 +22,13 @@ public class OrdersController(IMediator mediator) : CustomBaseController
     public async Task<IActionResult> Update([FromBody] UpdateOrderCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
+        return CreateActionResult(result);
+    }
+
+    [HttpPatch("{id:guid}/status")]
+    public async Task<IActionResult> ChangeStatus(Guid id, [FromBody] ChangeOrderStatusCommand command, CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(command with { Id = id }, cancellationToken);
         return CreateActionResult(result);
     }
 
